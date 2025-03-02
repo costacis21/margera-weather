@@ -5,13 +5,14 @@ from dotenv import load_dotenv
 import sqlite3
 import glob
 import pandas as pd
+from pathlib import Path
 
 
 load_dotenv()
-
-username = os.getenv('METEOMATICS_USERNAME')
-password = os.getenv('METEOMATICS_PASSWORD')
 db_path = os.getenv("DB_PATH")
+
+if db_path==None:
+        db_path="weatherAPI/src/weatherapi/data/weather.db"
 
 
 
@@ -53,7 +54,7 @@ def populate_dict():
 
 
 
-def create_database():
+def create_database(db_path=db_path):
     """Create the SQLite database and tables"""
     with open('schema.sql', 'r') as f:
 
@@ -68,7 +69,7 @@ def create_database():
     print(f"Database created at {db_path}")
 
 
-def populate_location_tbl(db_path="weather.db", locations = locations):
+def populate_location_tbl(db_path=db_path, locations = locations):
     """
     Populate DB
     """
@@ -93,7 +94,7 @@ def populate_location_tbl(db_path="weather.db", locations = locations):
     print(f"Loaded {len(locations)} locations into database")
 
 
-def add_dict_sql_mapping():
+def add_dict_sql_mapping(db_path=db_path):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
@@ -115,7 +116,7 @@ def add_dict_sql_mapping():
     return locations
 
 
-def populate_forecast_tbl(db_path="weather.db", csv_dir="./data", locations= locations):
+def populate_forecast_tbl(db_path=db_path, csv_dir="./data", locations= locations):
     """
     Load forecast data from CSV files
     """
@@ -162,14 +163,20 @@ def populate_forecast_tbl(db_path="weather.db", csv_dir="./data", locations= loc
 
 if __name__ == "__main__":
 
-    os.mkdir('data')
+    load_dotenv()
 
-    create_database()
+    username = os.getenv('METEOMATICS_USERNAME')
+    password = os.getenv('METEOMATICS_PASSWORD')
+
+
+    Path("data/").mkdir( exist_ok=True)
+
+    create_database(db_path=db_path)
     populate_dict()
-    populate_location_tbl()
-    locations = add_dict_sql_mapping()
+    populate_location_tbl(db_path=db_path)
+    locations = add_dict_sql_mapping(db_path=db_path)
 
-    populate_forecast_tbl()
+    populate_forecast_tbl(db_path=db_path)
 
 
 
