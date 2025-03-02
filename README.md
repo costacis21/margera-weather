@@ -42,9 +42,13 @@
     uvicorn app.main:app --reload
     ```
 
+3. Open your browser and go to http://127.0.0.1:8000
+
+4. For documentations head to http://127.0.0.1:8000/docs
+
 
 # Instructions for hosting on gcp
-> Requires google-cloud-sdk 
+    > Requires google-cloud-sdk 
 
 1. Authenticate with gcloud and set variables
     ```bash
@@ -54,10 +58,10 @@
     gcloud auth configure-docker
     ```
 
-> Must be in this directory `weatherAPI/src/weatherapi/`
+    > Must be in this directory `weatherAPI/src/weatherapi/`
 2. Deploy!
     ```bash
     gcloud run deploy sample --port 8080 --source .
     ```
-
+3. A link will be printed that points to the webservice. If you add /docs to the end of that link, it will prompt you with the relevant documentation
 
