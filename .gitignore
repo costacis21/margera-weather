@@ -169,3 +169,11 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+#Data
+*.csv
+*.db
+
+
+#idk
+*.lock

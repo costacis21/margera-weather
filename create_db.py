@@ -15,6 +15,7 @@ db_path = os.getenv("DB_PATH")
 
 
 
+#List the average the_temp of the last 3 forecasts for each location for every day
 
 locations = {
     "limasol" : {'coords':[(34.68529,33.033266)]},
@@ -47,7 +48,7 @@ def get_weather_forecast(coord, name, save=False, delta_D = 7, interval_H=1):
 def populate_dict():    
     for location_name, items in locations.items():
         coords =  items['coords']
-        locations[location_name]['data']=get_weather_forecast(coord=coords, name = location_name,save=True)
+        locations[location_name]['data']=get_weather_forecast(coord=coords, name = location_name,save=True,delta_D=7)
 
 
 

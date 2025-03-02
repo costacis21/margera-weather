@@ -10,22 +10,22 @@
     ```
 
 3. Create a new python environment:
- ```bash
+    ```bash
     python -m venv venv & pip install -r requirements.txt
- ```
+    ```
 4. Create a [Meteomatics API account](https://www.meteomatics.com/en/sign-up-weather-api-test-account/)
 
 5. Create a .env file containing the following variables:
     ```bash
-        METEOMATICS_USERNAME="YOUR-METEOMATICS-USERNAME"
-        METEOMATICS_PASSWORD="YOUR-METEOMATICS-PASSWORD"
-        DB_PATH="weather.db"
+    METEOMATICS_USERNAME="YOUR-METEOMATICS-USERNAME"
+    METEOMATICS_PASSWORD="YOUR-METEOMATICS-PASSWORD"
+    DB_PATH="weather.db"
     ```
 
 6. Run script 
-```bash
-python create_db.py
-```
+    ```bash
+    python create_db.py
+    ```
 
 
 
