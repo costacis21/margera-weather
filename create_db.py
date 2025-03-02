@@ -170,7 +170,7 @@ if __name__ == "__main__":
 
 
     Path("data/").mkdir( exist_ok=True)
-
+    Path(db_path).parent.mkdir(exist_ok=True, parents=True)
     create_database(db_path=db_path)
     populate_dict()
     populate_location_tbl(db_path=db_path)
