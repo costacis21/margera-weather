@@ -4,11 +4,16 @@ import pandas as pd
 import json
 
 
-
-#List locations
-
-
-def list_location(conn = None):
+def list_location(conn=None):
+    """
+    List all locations in the database
+    
+    Args:
+        conn: SQLite connection object
+        
+    Returns:
+        dict: Dictionary mapping location names to their IDs
+    """
     if not conn:
         raise Exception("This function requires a sqlite3 connection as a parameter, user ensures conn.close()")
 
@@ -18,21 +23,25 @@ def list_location(conn = None):
     cursor.execute("SELECT id, name FROM locations")
     result = cursor.fetchall()
 
-    result = {name:id for id,name in result}
-  
-    return str(result)
+    # Return as a Python dictionary instead of a string
+    return {name: id for id, name in result}
 
 
-
-#List the latest forecast for each location for every day
-
-
-def list_latest_forecast(conn = None,return_df=False):
-
+def list_latest_forecast(conn=None, return_df=False):
+    """
+    List the latest forecast for each location for every day
+    
+    Args:
+        conn: SQLite connection object
+        return_df: Whether to return the pandas DataFrame along with the records
+        
+    Returns:
+        list: List of forecast records as dictionaries
+    """
     if not conn:
         raise Exception("This function requires a sqlite3 connection as a parameter, user ensures conn.close()")
 
-    sql_statement="""
+    sql_statement = """
         SELECT *
         FROM forecasts f
         INNER JOIN (
@@ -43,21 +52,32 @@ def list_latest_forecast(conn = None,return_df=False):
         ORDER BY f.location_id;
     """
     
-    result = pd.read_sql(sql_statement,conn)
-
+    result = pd.read_sql(sql_statement, conn)
+    
+    # Return Python list of dictionaries instead of JSON string
+    records = result.to_dict(orient="records")
+    
     if return_df:
-        return result.to_json(orient="records"),result
+        return records, result
     
-    return result.to_json(orient="records")
+    return records
 
-#List the average the_temp of the last 3 forecasts for each location for every day
 
-def list_avg_temp_l3(conn = None,return_df=False):
+def list_avg_temp_l3(conn=None, return_df=False):
+    """
+    List the average temperature of the last 3 forecasts for each location for every day
     
+    Args:
+        conn: SQLite connection object
+        return_df: Whether to return the pandas DataFrame along with the records
+        
+    Returns:
+        list: List of average temperature records as dictionaries
+    """
     if not conn:
         raise Exception("This function requires a sqlite3 connection as a parameter, user ensures conn.close()")
 
-    sql_statement="""
+    sql_statement = """
         WITH RankedRecords AS (
             SELECT 
                 DATE(forecast_date) AS day,
@@ -79,48 +99,57 @@ def list_avg_temp_l3(conn = None,return_df=False):
         ORDER BY location_id, day;
     """
     
-    result = pd.read_sql(sql_statement,conn)
-
-    if return_df:
-        return result.to_json(orient="records"),result
+    result = pd.read_sql(sql_statement, conn)
     
-    return result.to_json(orient="records")
+    # Return Python list of dictionaries instead of JSON string
+    records = result.to_dict(orient="records")
+    
+    if return_df:
+        return records, result
+    
+    return records
 
 
-
-#Get the top n locations based on each available metric where n is a parameter given to the API call.
-
-def get_topn(n=3, conn = None):
+def get_topn(n=3, conn=None):
     """
-    Returns result in a tuple of {column_name : [tuple(value,locations.name), ] }, column_names=[list]
+    Get the top n locations based on each available metric
+    
+    Args:
+        n: Number of locations to return per metric
+        conn: SQLite connection object
+        
+    Returns:
+        dict: Dictionary with column names and top values with locations
     """
-
     if not conn:
         raise Exception("This function requires a sqlite3 connection as a parameter, user ensures conn.close()")
 
-    sql_statement="PRAGMA table_info('forecasts');"
+    sql_statement = "PRAGMA table_info('forecasts');"
     cursor = conn.cursor()
 
     result = cursor.execute(sql_statement).fetchall()
 
     column_names = [column[1] for column in result[3:]]
-
-
     cursor = conn.cursor()
 
     result = {}
 
     for name in column_names:
- 
-        sql_statement=f"SELECT f.{name}, l.name FROM forecasts f, locations l WHERE f.location_id= l.id ORDER BY f.{name} DESC LIMIT {n};"
-        result[name] = cursor.execute(sql_statement).fetchall()
+        # Order by the column, but handle NULL values by using NULLS LAST
+        sql_statement = f"""
+            SELECT f.{name}, l.name 
+            FROM forecasts f, locations l 
+            WHERE f.location_id = l.id 
+            ORDER BY f.{name} IS NULL, f.{name} DESC 
+            LIMIT {n};
+        """
+        rows = cursor.execute(sql_statement).fetchall()
+        # Convert tuples to dictionaries for better readability
+        # Explicitly keep NULL values as None
+        result[name] = [{"value": value, "location": location} for value, location in rows]
 
-
-    result = {'result':result,'column_names':column_names}
-  
-    
-    return json.dumps(result) 
-
-
-
-
+    # Return a Python dictionary instead of a JSON string
+    return {
+        'result': result,
+        'column_names': column_names
+    }
